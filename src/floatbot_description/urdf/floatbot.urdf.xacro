@@ -5,8 +5,15 @@
     <xacro:arg name="prefix" default=""/>
 
     <xacro:include filename="$(find floatbot_description)/urdf/floatbot_base.urdf.xacro"/>
+    <xacro:include filename="$(find floatbot_description)/urdf/voxel.urdf.xacro"/>
 
     <xacro:floatbot_base 
         prefix="$(arg prefix)"
     />
+
+    <xacro:voxel 
+        prefix="$(arg prefix)"
+        parent="$(arg prefix)base_link">
+        <origin xyz="0.0 0.0 ${(base_height + voxel_width)/2}" rpy="0.0 0.0 0.0"/>
+    </xacro:voxel>
 </robot>

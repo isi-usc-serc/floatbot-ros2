@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="voxel_width" value=".305"/>
+
+    <xacro:macro name="voxel" params="prefix parent *origin">
+        <link name="${prefix}voxel_link">
+            <visual>
+                <geometry>
+                    <box size="${voxel_width} ${voxel_width} ${voxel_width}"/>
+                </geometry>
+
+                <material name="green">
+                    <color rgba="0.0 1.0 0.0 1.0"/>
+                </material>
+            </visual>
+        </link>
+
+        <joint name="${prefix}voxel_joint" type="fixed">
+            <xacro:insert_block name="origin"/>
+            
+            <parent link="${prefix}${parent}"/>
+
+            <child link="${prefix}voxel_link"/>
+        </joint>
+    </xacro:macro>
+/</robot>
