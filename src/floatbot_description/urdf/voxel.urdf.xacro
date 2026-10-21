@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="voxel">
     <xacro:property name="voxel_width" value=".305"/>
 
     <xacro:macro name="voxel" params="prefix parent *origin">

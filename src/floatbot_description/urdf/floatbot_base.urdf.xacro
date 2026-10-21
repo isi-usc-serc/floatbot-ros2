@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="floatbot_base">
     <xacro:property name="base_diameter" value=".3"/>
     <xacro:property name="base_height" value=".475"/>
 
