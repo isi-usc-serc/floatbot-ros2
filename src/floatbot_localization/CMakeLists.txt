@@ -7,14 +7,32 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp)
 find_package(robot_localization REQUIRED)
-find_package(tf2_ros REQUIRED)
+find_package(rclcpp)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+# declare custom nodes
+add_executable(floatbot_pose_publisher src/floatbot_pose_publisher.cpp)
+ament_target_dependencies(floatbot_pose_publisher
+  rclcpp
+  geometry_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+# install custom nodes
+install(
+  TARGETS floatbot_pose_publisher
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
