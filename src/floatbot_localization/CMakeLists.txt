@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(robot_localization REQUIRED)
+find_package(robot_state_publisher REQUIRED)
 find_package(rclcpp)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -32,6 +33,12 @@ ament_target_dependencies(floatbot_pose_publisher
 install(
   TARGETS floatbot_pose_publisher
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# install directories
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

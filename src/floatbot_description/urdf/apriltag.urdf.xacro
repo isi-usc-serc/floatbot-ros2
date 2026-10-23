@@ -4,7 +4,7 @@
     <xacro:property name="tag_width" value=".003"/>
 
     <xacro:macro name="apriltag" params="prefix tag_id tag_size parent *origin">
-        <link name="${prefix}tag_{tag_id}_link">
+        <link name="${prefix}tag_${tag_id}_link">
             <visual>
                 <geometry>
                     <box size="${tag_size} ${tag_size} ${tag_width}"/>
@@ -16,12 +16,12 @@
             </visual>
         </link>
 
-        <joint name="${prefix}tag_{tag_id}_joint" type="fixed">
+        <joint name="${prefix}tag_${tag_id}_joint" type="fixed">
             <xacro:insert_block name="origin"/>
             
             <parent link="${prefix}${parent}"/>
 
-            <child link="${prefix}tag_{tag_id}_link"/>
+            <child link="${prefix}tag_${tag_id}_link"/>
         </joint>
     </xacro:macro>
 /</robot>

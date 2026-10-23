@@ -3,6 +3,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="floatbot">
     <xacro:arg name="robot_name" default="floatbot"/>
     <xacro:arg name="prefix" default=""/>
+    <xacro:arg name="tag_id" default="1"/>
 
     <xacro:include filename="$(find floatbot_description)/urdf/floatbot_base.urdf.xacro"/>
     <xacro:include filename="$(find floatbot_description)/urdf/voxel.urdf.xacro"/>
@@ -14,7 +15,7 @@
         <origin xyz="0.0 0.0 ${(base_height + voxel_width)/2}" rpy="0.0 0.0 0.0"/>
     </xacro:voxel>
 
-    <xacro:apriltag prefix="$(arg prefix)" tag_id="0" tag_size=".142" parent="$(arg prefix)voxel_link">
+    <xacro:apriltag prefix="$(arg prefix)" tag_id="$(arg tag_id)" tag_size=".142" parent="$(arg prefix)voxel_link">
         <origin xyz="0.0 0.0 ${(voxel_width)/2}" rpy="0.0 0.0 0.0"/>
     </xacro:apriltag>
 </robot>
