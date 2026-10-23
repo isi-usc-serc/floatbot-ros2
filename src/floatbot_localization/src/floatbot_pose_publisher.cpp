@@ -3,7 +3,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "tf2/LinearMath/Transform.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
@@ -14,7 +14,6 @@ class FloatbotPosePublisher : public rclcpp::Node {
 
 public:
     FloatbotPosePublisher() : Node("floatbot_pose_publisher"){
-
         this->declare_parameter("prefix", "");
         this->declare_parameter("world_frame", "map"); // Frame to measure pose with respect to
         this->declare_parameter("tag_frame", "tag36h11:0"); // Tag to use for pose measurement
@@ -32,7 +31,7 @@ public:
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-        floatbot_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
+        floatbot_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "floatbot_pose", 
             10
         );
@@ -75,12 +74,23 @@ private:
             // multiply transforms
             tf2::Transform tf2_T_wb = tf2_T_wt * tf2_T_tb;
 
-            // publish the resulting floatbot pose message
-            geometry_msgs::msg::PoseStamped floatbot_pose;
-            floatbot_pose.header.stamp = this->get_clock()->now();
-            floatbot_pose.header.frame_id = world_frame_;
-            tf2::toMsg(tf2_T_wb, floatbot_pose.pose);
-            floatbot_pose_pub_->publish(floatbot_pose);
+            // create pose message
+            geometry_msgs::msg::PoseWithCovarianceStamped pose_msg;
+            pose_msg.header.stamp = this->get_clock()->now(); // time stamp
+            pose_msg.header.frame_id = world_frame_; // parent frame
+            tf2::toMsg(tf2_T_wb, pose_msg.pose.pose); // computed pose
+            
+            // covariance matrix
+            pose_msg.pose.covariance.fill(0.0); // initialize to zero
+            pose_msg.pose.covariance[0] = 0.1; // x variance
+            pose_msg.pose.covariance[7] = 0.1; // y variance
+            pose_msg.pose.covariance[14] = 0.1; // z variance
+            pose_msg.pose.covariance[21] = 0.05; // roll variance
+            pose_msg.pose.covariance[28] = 0.05; // pitch variance
+            pose_msg.pose.covariance[35] = 0.05; // yaw variance
+            
+            // publish pose message
+            floatbot_pose_pub_->publish(pose_msg);
         }
         
         // return an error if one of the needed transforms is not found
@@ -100,7 +110,7 @@ private:
 
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr floatbot_pose_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr floatbot_pose_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
