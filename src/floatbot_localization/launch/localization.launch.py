@@ -1,29 +1,34 @@
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, GroupAction
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import Node, PushRosNamespace
+from launch.substitutions import Command, PathJoinSubstitution
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+# Parameters
 floatbot_ns = 'floatbot'
 
 def generate_launch_description():
     ld = LaunchDescription()
 
+    # Compile the URDF with Xacro
+    package_dir = FindPackageShare('floatbot_description')
+    urdf_path = PathJoinSubstitution([package_dir, 'urdf/floatbot.urdf.xacro'])
+    compiled_urdf = Command([
+        'xacro ', urdf_path,
+        ' tag_id:=', '1'
+    ])
+
+    # URDF publisher
     ld.add_action(
-        GroupAction(
-            actions = [
-                PushRosNamespace(floatbot_ns),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([FindPackageShare('urdf_launch'), 'launch', 'description.launch.py']),
-                    launch_arguments = {
-                        'urdf_package': 'floatbot_description',
-                        'urdf_package_path': PathJoinSubstitution(['urdf', 'floatbot.urdf.xacro'])
-                    }.items()
-                )
-            ]
+        Node(
+            package = 'robot_state_publisher',
+            executable = 'robot_state_publisher',
+            parameters = [{
+                'robot_description': compiled_urdf
+            }]
         )
     )
 
+    # Apriltag pose publisher
     ld.add_action(
         Node(
             package = 'floatbot_localization',
