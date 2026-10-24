@@ -9,11 +9,11 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-class FloatbotPosePublisher : public rclcpp::Node {
-    // Reads pose of an Apriltag in the world frame and publishes the pose of the floatbot's base link in the same frame
+class CameraPosePublisher : public rclcpp::Node {
+    // Reads pose of an Apriltag in the world frame from the overhead camera and publishes the pose of the floatbot's base link in the same frame
 
 public:
-    FloatbotPosePublisher() : Node("floatbot_pose_publisher"){
+    CameraPosePublisher() : Node("camera_pose_publisher"){
         this->declare_parameter("prefix", "");
         this->declare_parameter("world_frame", "map"); // Frame to measure pose with respect to
         this->declare_parameter("tag_frame", "tag36h11:0"); // Tag to use for pose measurement
@@ -31,19 +31,19 @@ public:
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-        floatbot_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "floatbot_pose", 
+        pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "camera_pose", 
             10
         );
 
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(static_cast<int>(1000.0 / publish_rate_)),
-            std::bind(&FloatbotPosePublisher::timer_callback, this)
+            std::bind(&CameraPosePublisher::timer_callback, this)
         );
 
         RCLCPP_INFO(
             this->get_logger(),
-            "Floatbot pose publisher initialized. Publishing measured pose of robot frame: '%s' in world frame: '%s' using tag: '%s'",
+            "Camera pose publisher initialized. Publishing measured pose of floatbot frame: '%s' in world frame: '%s' using tag: '%s'",
             base_link_.c_str(), world_frame_.c_str(), tag_frame_.c_str()
         );
     }
@@ -90,7 +90,7 @@ private:
             pose_msg.pose.covariance[35] = 0.05; // yaw variance
             
             // publish pose message
-            floatbot_pose_pub_->publish(pose_msg);
+            pose_pub_->publish(pose_msg);
         }
         
         // return an error if one of the needed transforms is not found
@@ -110,13 +110,13 @@ private:
 
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr floatbot_pose_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
 int main(int argc, char * argv[]){
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<FloatbotPosePublisher>());
+    rclcpp::spin(std::make_shared<CameraPosePublisher>());
     rclcpp::shutdown();
     return 0;
 }

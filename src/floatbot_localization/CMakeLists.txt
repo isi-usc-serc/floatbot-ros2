@@ -20,8 +20,8 @@ find_package(tf2_geometry_msgs REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 # declare custom nodes
-add_executable(floatbot_pose_publisher src/floatbot_pose_publisher.cpp)
-ament_target_dependencies(floatbot_pose_publisher
+add_executable(camera_pose_publisher src/camera_pose_publisher.cpp)
+ament_target_dependencies(camera_pose_publisher
   rclcpp
   geometry_msgs
   tf2
@@ -31,13 +31,13 @@ ament_target_dependencies(floatbot_pose_publisher
 
 # install custom nodes
 install(
-  TARGETS floatbot_pose_publisher
+  TARGETS camera_pose_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
 # install directories
 install(
-  DIRECTORY launch
+  DIRECTORY launch cfg
   DESTINATION share/${PROJECT_NAME}
 )
 

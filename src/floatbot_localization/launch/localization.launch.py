@@ -17,11 +17,11 @@ def generate_launch_description():
         ' tag_id:=', '1'
     ])
 
-    # URDF publisher
     ld.add_action(
         Node(
             package = 'robot_state_publisher',
             executable = 'robot_state_publisher',
+            namespace = floatbot_ns,
             parameters = [{
                 'robot_description': compiled_urdf
             }]
@@ -32,12 +32,25 @@ def generate_launch_description():
     ld.add_action(
         Node(
             package = 'floatbot_localization',
-            executable = 'floatbot_pose_publisher',
+            executable = 'camera_pose_publisher',
             name = 'pose_publisher',
             namespace = floatbot_ns,
             parameters = [{
                 'tag_frame': 'tag36h11:1',
                 'tag_link': 'tag_1_link'
+            }]
+        )
+    )
+
+    # EKF Node
+    ld.add_action(
+        Node(
+            package = 'robot_localization',
+            executable = 'ekf_node',
+            name = 'ekf',
+            namespace = floatbot_ns,
+            parameters = [{
+                PathJoinSubstitution([FindPackageShare('floatbot_localization'), 'cfg', 'ekf_floatbot.yaml'])
             }]
         )
     )
