@@ -1,0 +1,32 @@
+### ekf config file ###
+/**:
+  ekf:
+      ros__parameters:
+
+        # node parameters  
+        frequency: 30.0
+        two_d_mode: true
+        print_diagnostics: true
+        publish_tf: true
+
+        # frames
+        odom_frame: map
+        base_link_frame: base_footprint
+        world_frame: map
+
+        # pose from overhead camera
+        pose0: camera_pose
+        pose0_config: [
+          true, true, true,     # X, Y, Z
+          true, true, true,     # Roll, Pitch, Yaw
+          false, false, false,  # X vel, Y vel, Z vel
+          false, false, false,  # Roll vel, Pitch vel, Yaw vel
+          false, false, false   # X acc, Y acc, Z acc
+        ]
+        pose0_differential: false
+        pose0_relative: false
+        pose0_queue_size: 5
+        pose0_rejection_threshold: 2.0  
+
+        # process noise
+        process_noise_covariance: [0.05, 0.05, 0.06, 0.03, 0.03, 0.06, 0.025, 0.025, 0.04, 0.01, 0.01, 0.02, 0.01, 0.01, 0.015]
