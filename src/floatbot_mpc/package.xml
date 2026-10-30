@@ -3,11 +3,13 @@
 <package format="3">
   <name>floatbot_mpc</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="davidbacher42@gmail.com">david</maintainer>
+  <description>Floatbot MPC controller</description>
+  <maintainer email="dbacher@usc.edu">dbacher</maintainer>
   <license>MIT</license>
 
-  <depend>rclpy</depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

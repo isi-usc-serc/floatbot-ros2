@@ -13,9 +13,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='david',
-    maintainer_email='davidbacher42@gmail.com',
-    description='TODO: Package description',
+    maintainer='dbacher',
+    maintainer_email='dbacher@usc.edu',
+    description='Floatbot MPC controller',
     license='MIT',
     extras_require={
         'test': [
@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'floatbot_mpc = floatbot_mpc.floatbot_mpc:main'
         ],
     },
 )
