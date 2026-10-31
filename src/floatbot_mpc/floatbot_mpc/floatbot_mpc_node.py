@@ -37,7 +37,6 @@ class FloatbotMPC(Node):
         )
 
     def odom_callback(self, msg: Odometry):
-        self.get_logger().info('Odometry message recieved')
 
         # read message and extract planar components
         self.r = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
@@ -50,7 +49,6 @@ class FloatbotMPC(Node):
         self.q = np.array([q_norm[0], q_norm[3]])
 
     def cmd_callback(self, msg: PoseStamped):
-        self.get_logger().info('Command message recieved')
 
         # read message and extract planar components
         self.r_cmd = np.array([msg.pose.position.x, msg.pose.position.y])

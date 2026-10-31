@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'floatbot_mpc = floatbot_mpc.floatbot_mpc:main'
+            'floatbot_mpc = floatbot_mpc.floatbot_mpc_node:main'
         ],
     },
 )
