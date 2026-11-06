@@ -8,6 +8,9 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
+find_package(acados_vendor_ros2 REQUIRED)
+find_package(acados_solver_base REQUIRED)
+find_package(acados_solver_plugins REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.

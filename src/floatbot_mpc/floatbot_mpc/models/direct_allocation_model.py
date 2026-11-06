@@ -1,6 +1,6 @@
 import numpy as np
 import casadi as cs
-from models import utils
+from floatbot_mpc.models import utils
 from acados_template import AcadosModel
 
 class DirectAllocationModel():
@@ -27,7 +27,9 @@ class DirectAllocationModel():
             T - self.cg[0]*F[1,:] - self.cg[1]*F[0,:]
         ])
 
-    def get_acados_model(self):
+        self.model = self.setup()
+
+    def setup(self) -> AcadosModel:
         model = AcadosModel()
         model.name = self.name
 
@@ -93,4 +95,5 @@ class DirectAllocationModel():
         model.cost_y_expr_0 = cs.vertcat(x_e, u) # initial cost
         model.cost_y_expr = cs.vertcat(x_e, u) # stage cost
         model.cost_y_expr_e = x_e # terminal cost
+        
         return model

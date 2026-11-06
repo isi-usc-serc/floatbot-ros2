@@ -59,3 +59,6 @@ CATKIN_IGNORE
 
 # generated acados code
 acados_codegen/
+
+# external dependencies
+src/external/

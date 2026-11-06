@@ -18,12 +18,12 @@ class DirectAllocationMPC():
         self.R = 5e0*np.eye(8)
         self.P = self.Q
 
-        # set up ocp when class is created
-        self.setup()
+        # run setup
+        self.ocp = self.setup()
 
-    def setup(self):
+    def setup(self) -> AcadosOcp:
         ocp = AcadosOcp()
-        ocp.model = self.model.get_acados_model()
+        ocp.model = self.model
 
         # set default parameter values
         ocp.parameter_values = np.array([0, 0, 1, 0, 0, 0, 0])
@@ -58,7 +58,7 @@ class DirectAllocationMPC():
         ocp.solver_options.nlp_solver_type = 'SQP_RTI'
 
         # return solver
-        self.ocp = ocp
+        return ocp
 
     def build(self):
 
