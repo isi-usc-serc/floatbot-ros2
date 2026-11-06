@@ -1,6 +1,6 @@
 import numpy as np
 import casadi as cs
-from ..models import utils
+from models import utils
 from acados_template import AcadosModel
 
 class DirectAllocationModel():
@@ -24,7 +24,7 @@ class DirectAllocationModel():
         ])
         self.B = np.vstack([
             F,
-            T - np.cross(self.cg, F, axis=0)
+            T - self.cg[0]*F[1,:] - self.cg[1]*F[0,:]
         ])
 
     def get_acados_model(self):
