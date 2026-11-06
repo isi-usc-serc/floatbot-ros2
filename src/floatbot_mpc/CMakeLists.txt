@@ -13,6 +13,9 @@ find_package(ament_cmake_python REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+# configure python targets
+ament_python_install_package(${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
