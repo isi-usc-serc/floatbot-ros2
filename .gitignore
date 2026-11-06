@@ -56,3 +56,6 @@ CATKIN_IGNORE
 
 # virtual environments
 .venv/
+
+# generated acados code
+acados_codegen/
