@@ -8,13 +8,28 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(acados_vendor_ros2 REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(acados_solver_base REQUIRED)
 find_package(acados_solver_plugins REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+# configure executables
+add_executable(floatbot_mpc_controller src/floatbot_mpc_controller.cpp)
+ament_target_dependencies(floatbot_mpc_controller
+  rclcpp
+  pluginlib
+  acados_solver_base
+  acados_solver_plugins
+)
+
+# configure cmake targets
+install(TARGETS floatbot_mpc_controller
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # configure python targets
 ament_python_install_package(${PROJECT_NAME})
