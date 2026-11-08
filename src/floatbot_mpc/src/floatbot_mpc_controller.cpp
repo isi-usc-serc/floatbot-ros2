@@ -9,12 +9,27 @@
 #include "rclcpp/rclcpp.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "acados_solver_base/acados_solver.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 class FloatbotMpcController : public rclcpp::Node {
+    // Reads floatbot odometry data and uses an acados solver plugin to perform MPC control
 
     public:
     FloatbotMpcController() : Node("floatbot_mpc_controller") {
 
+        // odometry subscriber setup
+        const auto odom_topic = declare_parameter<std::string>(
+            "odom_topic",
+            "/odom/filtered"
+        );
+
+        odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+            odom_topic,
+            rclcpp::SensorDataQoS(),
+            [this](nav_msgs::msg::Odometry::ConstSharedPtr msg) { odom_callback(msg); }
+        );
+
+        // MPC controller setup
         const auto plugin_name = declare_parameter<std::string>(
             "solver_plugin",
             "acados_solver_plugins/FloatbotDirectAllocationMpc"
@@ -59,21 +74,52 @@ class FloatbotMpcController : public rclcpp::Node {
             "Loaded solver '%s': N=%d, Ts=%.6f s",
             plugin_name.c_str(),
             horizon_steps,
-            sampling_time);
+            sampling_time
+        );
 
         // Start the timer only after successful solver initialization.
         timer_ = create_wall_timer(
             timer_period,
-            [this]() { controller_callback(); });
+            [this]() { controller_callback(); }
+        );
     }
 
 private:
-    void controller_callback()
-    {
-        // TODO: Update the measured initial state before each solve:
-        // solver_->set_initial_state_values(current_state);
-        //
-        // Also update commanded states
+    void odom_callback(nav_msgs::msg::Odometry::ConstSharedPtr msg) {
+        last_odom_ = msg;
+    }
+
+    void controller_callback() {
+        // wait for odometry to arrive before starting controller
+        if (!last_odom_) {
+            RCLCPP_WARN_THROTTLE(
+                get_logger(),
+                *get_clock(),
+                1000,
+                "Waiting for odometry..."
+            );
+            return;
+        }
+
+        // get latest odom message
+        const auto & pose = last_odom_->pose.pose;
+        const auto & twist = last_odom_->twist.twist;
+
+        // map odom message to expected state format
+        std::vector<double> current_state = {
+            pose.position.x, 
+            pose.position.y, 
+            pose.orientation.w, 
+            pose.orientation.z,
+            twist.linear.x,
+            twist.linear.y,
+            twist.angular.z
+        };
+        
+        // Update the measured initial state before each solve:
+        solver_->set_initial_state_values(current_state);
+        
+        // TO DO: Update commanded states
 
         const int status = solver_->solve();
 
@@ -94,6 +140,8 @@ private:
         // TODO: Publish optimal_u_
     }
 
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    nav_msgs::msg::Odometry::ConstSharedPtr last_odom_;
     std::unique_ptr<pluginlib::ClassLoader<acados::AcadosSolver>> loader_;
     std::shared_ptr<acados::AcadosSolver> solver_;
     std::vector<double> optimal_u_;

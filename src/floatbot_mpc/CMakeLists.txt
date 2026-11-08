@@ -12,6 +12,7 @@ find_package(rclcpp REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(acados_solver_base REQUIRED)
 find_package(acados_solver_plugins REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -21,9 +22,10 @@ find_package(acados_solver_plugins REQUIRED)
 add_executable(floatbot_mpc_controller src/floatbot_mpc_controller.cpp)
 ament_target_dependencies(floatbot_mpc_controller
   rclcpp
-  pluginlib
   acados_solver_base
   acados_solver_plugins
+  pluginlib
+  nav_msgs
 )
 
 # configure cmake targets

@@ -10,9 +10,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <depend>acados_solver_ros2</depend>
+  <depend>acados_solver_base</depend>
   <depend>acados_solver_plugins</depend>
   <depend>pluginlib</depend>
+  <depend>nav_msgs</depend>
 
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-scipy</exec_depend>
