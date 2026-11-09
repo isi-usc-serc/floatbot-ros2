@@ -53,3 +53,12 @@ CATKIN_IGNORE
 
 # VSCode config files
 .vscode/
+
+# virtual environments
+.venv/
+
+# generated acados code
+acados_codegen/
+
+# external dependencies
+src/external/

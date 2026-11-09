@@ -1,10 +1,14 @@
 #include <memory>
 #include <string>
+#include <chrono>
+#include <functional>
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "tf2/LinearMath/Transform.h"
+#include "tf2/exceptions.hpp"
+#include "tf2/time.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -33,7 +37,7 @@ public:
 
         pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "camera_pose", 
-            10
+            rclcpp::QoS(1).reliable()
         );
 
         timer_ = this->create_wall_timer(
@@ -114,9 +118,21 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
-int main(int argc, char * argv[]){
+int main(int argc, char ** argv) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<CameraPosePublisher>());
+
+    int exit_code = 0;
+
+    try {
+        rclcpp::spin(std::make_shared<CameraPosePublisher>());
+    } catch (const std::exception & ex) {
+        RCLCPP_FATAL(
+            rclcpp::get_logger("camera_pose_publisher"),
+            "Camera Pose Publisher failed: %s",
+            ex.what());
+        exit_code = 1;
+    }
+
     rclcpp::shutdown();
-    return 0;
+    return exit_code;
 }

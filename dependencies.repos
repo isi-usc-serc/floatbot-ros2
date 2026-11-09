@@ -1,0 +1,9 @@
+repositories:
+    src/acados_vendor_ros2:
+        type: git
+        url: https://github.com/ICube-Robotics/acados_vendor_ros2.git
+        version: main
+    src/acados_solver_ros2:
+        type: git
+        url: https://github.com/ICube-Robotics/acados_solver_ros2.git
+        version: main
