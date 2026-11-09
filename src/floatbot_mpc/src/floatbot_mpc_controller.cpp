@@ -10,6 +10,8 @@
 #include "pluginlib/class_loader.hpp"
 #include "acados_solver_base/acados_solver.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "floatbot_interfaces/msg/thruster_command.hpp"
 
 class FloatbotMpcController : public rclcpp::Node {
     // Reads floatbot odometry data and uses an acados solver plugin to perform MPC control
@@ -20,7 +22,7 @@ class FloatbotMpcController : public rclcpp::Node {
         // odometry subscriber setup
         const auto odom_topic = declare_parameter<std::string>(
             "odom_topic",
-            "/odom/filtered"
+            "odom/filtered"
         );
 
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
@@ -29,7 +31,30 @@ class FloatbotMpcController : public rclcpp::Node {
             [this](nav_msgs::msg::Odometry::ConstSharedPtr msg) { odom_callback(msg); }
         );
 
-        // MPC controller setup
+        // pose command subscriber setup
+        const auto pose_cmd_topic = declare_parameter<std::string>(
+            "pose_cmd_topic",
+            "pose_cmd"
+        );
+
+        pose_cmd_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+            pose_cmd_topic,
+            rclcpp::QoS(1).reliable(),
+            [this](geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) { pose_cmd_callback(msg); }
+        );
+
+        // thruster command publisher setup
+        const auto ctrl_topic = declare_parameter<std::string>(
+            "ctrl_topic",
+            "thrust_cmd"
+        );
+
+        thruster_ctrl_pub_ = this->create_publisher<floatbot_interfaces::msg::ThrusterCommand>(
+            ctrl_topic,
+            rclcpp::QoS(1).reliable()
+        );
+
+        // MPC plugin setup
         const auto plugin_name = declare_parameter<std::string>(
             "solver_plugin",
             "acados_solver_plugins/FloatbotDirectAllocationMpc"
@@ -37,7 +62,7 @@ class FloatbotMpcController : public rclcpp::Node {
 
         // Set MPC parameters
         const int horizon_steps = declare_parameter<int>("horizon_steps", 20);
-        const double sampling_time = declare_parameter<double>("sampling_time", 0.01);
+        const double sampling_time = declare_parameter<double>("sampling_time", 0.05);
 
         if (horizon_steps <= 0) {
             throw std::invalid_argument("horizon_steps must be positive");
@@ -47,6 +72,7 @@ class FloatbotMpcController : public rclcpp::Node {
             throw std::invalid_argument("sampling_time must be finite and positive");
         }
 
+        // run the controller at the same period as the MPC sampling time
         const auto timer_period = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(sampling_time));
 
         if (timer_period.count() <= 0) {
@@ -89,37 +115,55 @@ private:
         last_odom_ = msg;
     }
 
+    void pose_cmd_callback(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) {
+        last_pose_cmd_ = msg;
+    }
+
     void controller_callback() {
-        // wait for odometry to arrive before starting controller
-        if (!last_odom_) {
+        // wait for odometry and commanded pose to arrive before starting controller
+        if (!last_odom_ || !last_pose_cmd_) {
             RCLCPP_WARN_THROTTLE(
                 get_logger(),
                 *get_clock(),
                 1000,
-                "Waiting for odometry..."
+                "Waiting for odometry and a pose command..."
             );
             return;
         }
 
-        // get latest odom message
-        const auto & pose = last_odom_->pose.pose;
-        const auto & twist = last_odom_->twist.twist;
+        // get latest odom and pose command messages
+        const auto & pose_meas = last_odom_->pose.pose;
+        const auto & twist_meas = last_odom_->twist.twist;
+        const auto & pose_cmd = last_pose_cmd_->pose;
 
-        // map odom message to expected state format
+        // map odom message to expected state format {rx, ry, qw, qz, vx, vy, wz}
         std::vector<double> current_state = {
-            pose.position.x, 
-            pose.position.y, 
-            pose.orientation.w, 
-            pose.orientation.z,
-            twist.linear.x,
-            twist.linear.y,
-            twist.angular.z
+            pose_meas.position.x, 
+            pose_meas.position.y, 
+            pose_meas.orientation.w, 
+            pose_meas.orientation.z,
+            twist_meas.linear.x,
+            twist_meas.linear.y,
+            twist_meas.angular.z
+        };
+
+        // map pose command message to expected parameter format {rx, ry, qw, qz, vx, vy, wz}
+        std::vector<double> current_params = {
+            pose_cmd.position.x,
+            pose_cmd.position.y,
+            pose_cmd.orientation.w,
+            pose_cmd.orientation.z,
+            0,
+            0,
+            0
         };
         
-        // Update the measured initial state before each solve:
+        // Update the measured initial state and commanded state before each solve:
         solver_->set_initial_state_values(current_state);
+        solver_->set_runtime_parameters(current_params);
+
         
-        // TO DO: Update commanded states
+        // TO DO: publish commanded states
 
         const int status = solver_->solve();
 
@@ -134,14 +178,38 @@ private:
             return;
         }
 
-        // First control input in the optimized sequence.
+        // get first control input in the optimized sequence.
         optimal_u_ = solver_->get_control_values(0);
 
-        // TODO: Publish optimal_u_
+        // create blank thruster command message
+        floatbot_interfaces::msg::ThrusterCommand msg;
+        msg.header.stamp = now();
+
+        // check if output of MPC is the right size for the thruster message
+        if (optimal_u_.size() != msg.thrusts.size()) {
+            RCLCPP_ERROR(
+                get_logger(),
+                "Expected %zu thruster commands, received %zu",
+                msg.thrusts.size(),
+                optimal_u_.size()
+            );
+            return;
+        }
+
+        // assemble thruster command message
+        for (std::size_t i = 0; i < msg.thrusts.size(); ++i) {
+            msg.thrusts[i] = static_cast<float>(optimal_u_[i]);
+        }
+
+        // publish control message
+        thruster_ctrl_pub_->publish(msg);
     }
 
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_cmd_sub_;
+    rclcpp::Publisher<floatbot_interfaces::msg::ThrusterCommand>::SharedPtr thruster_ctrl_pub_;
     nav_msgs::msg::Odometry::ConstSharedPtr last_odom_;
+    geometry_msgs::msg::PoseStamped::ConstSharedPtr last_pose_cmd_;
     std::unique_ptr<pluginlib::ClassLoader<acados::AcadosSolver>> loader_;
     std::shared_ptr<acados::AcadosSolver> solver_;
     std::vector<double> optimal_u_;

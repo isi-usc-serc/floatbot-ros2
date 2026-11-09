@@ -58,7 +58,7 @@ class DirectAllocationModel():
         u = cs.MX.sym('u', 8)
 
         # dynamics
-        q_norm = q / cs.norm_2(q)
+        # q_norm = q / cs.norm_2(q) # norm_2 in the denominator sometimes causes solver to fail, TO DO: use a regularized quaternion approximation that avoids dividing by zero
         R = utils.quat2rot(q)
         cg_X = utils.skew(self.cg)
         M = cs.vertcat(
@@ -74,7 +74,7 @@ class DirectAllocationModel():
         # set state derivative function
         f = cs.vertcat(
             v,
-            .5*utils.q_mult(q_norm, cs.vertcat(0, w)),
+            .5*utils.q_mult(q, cs.vertcat(0, w)),
             accel
         )
 
@@ -92,7 +92,6 @@ class DirectAllocationModel():
         model.xdot = x_dot # state derivative
         model.u = u # inputs
         model.p = x_cmd # parameters
-        model.cost_y_expr_0 = cs.vertcat(x_e, u) # initial cost
         model.cost_y_expr = cs.vertcat(x_e, u) # stage cost
         model.cost_y_expr_e = x_e # terminal cost
         

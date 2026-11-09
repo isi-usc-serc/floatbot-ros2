@@ -1,4 +1,3 @@
-import os
 from floatbot_mpc.models.direct_allocation_model import DirectAllocationModel
 from floatbot_mpc.controllers.direct_allocation_mpc import DirectAllocationMPC
 from acados_solver_plugins import SolverPluginGenerator

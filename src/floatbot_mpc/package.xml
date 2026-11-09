@@ -14,6 +14,8 @@
   <depend>acados_solver_plugins</depend>
   <depend>pluginlib</depend>
   <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>floatbot_interfaces</depend>
 
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-scipy</exec_depend>

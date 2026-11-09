@@ -9,7 +9,7 @@ class DirectAllocationMPC():
 
         # solver parameters
         self.model = model
-        self.dt = .2
+        self.dt = .05
         self.N = 20
         self.u_max = 1.4
 
@@ -28,17 +28,12 @@ class DirectAllocationMPC():
         # set default parameter values
         ocp.parameter_values = np.array([0, 0, 1, 0, 0, 0, 0])
 
-        # define initial cost function 
-        ocp.cost.cost_type_0 = 'NONLINEAR_LS'
-        ocp.cost.W_0 = linalg.block_diag(self.Q, self.R)
-        ocp.cost.yref_0 = np.zeros(ocp.model.cost_y_expr_0.shape[0])
-
         # define stage cost function 
         ocp.cost.cost_type = 'NONLINEAR_LS'
         ocp.cost.W = linalg.block_diag(self.Q, self.R)
         ocp.cost.yref = np.zeros(ocp.model.cost_y_expr.shape[0])
 
-        # define initial cost function 
+        # define terminal cost function 
         ocp.cost.cost_type_e = 'NONLINEAR_LS'
         ocp.cost.W_e = self.Q
         ocp.cost.yref_e = np.zeros(ocp.model.cost_y_expr_e.shape[0])

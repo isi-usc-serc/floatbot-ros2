@@ -13,6 +13,8 @@ find_package(pluginlib REQUIRED)
 find_package(acados_solver_base REQUIRED)
 find_package(acados_solver_plugins REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(floatbot_interfaces REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -26,6 +28,8 @@ ament_target_dependencies(floatbot_mpc_controller
   acados_solver_plugins
   pluginlib
   nav_msgs
+  geometry_msgs
+  floatbot_interfaces
 )
 
 # configure cmake targets
