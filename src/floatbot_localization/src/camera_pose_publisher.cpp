@@ -37,7 +37,7 @@ public:
 
         pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "camera_pose", 
-            10
+            rclcpp::QoS(1).reliable()
         );
 
         timer_ = this->create_wall_timer(
