@@ -61,4 +61,8 @@ CATKIN_IGNORE
 acados_codegen/
 
 # external dependencies
-src/external/
+ros2.repos
+acados_vendor_ros2/
+acados_solver_ros2/
+micro_ros_setup/
+uros/

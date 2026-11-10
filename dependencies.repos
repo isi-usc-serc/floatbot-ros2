@@ -7,3 +7,7 @@ repositories:
         type: git
         url: https://github.com/ICube-Robotics/acados_solver_ros2.git
         version: main
+    src/micro_ros_setup:
+        type: git
+        url: https://github.com/micro-ROS/micro_ros_setup.git
+        version: jazzy
